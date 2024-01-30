@@ -5,14 +5,19 @@ from better_proxy import Proxy
 from aiohttp_socks import ProxyConnector
 import os
 from dotenv import load_dotenv
+from prettytable import PrettyTable
 
 load_dotenv()
 
-failed = 0
+overloaded_request = 0
+successful_request = 0
+cooldown_request = 0
+error_request = 0
+
 
 async def requets_tokens(wallet: str, proxy: str) -> int:
-    global failed
-    
+    global overloaded_request, successful_request, error_request, cooldown_request
+
     api_key = os.getenv("CAPSOLVER_KEY")
     proxy = Proxy.from_str(proxy)
     connector = ProxyConnector.from_url(proxy.as_url)
@@ -54,10 +59,15 @@ async def requets_tokens(wallet: str, proxy: str) -> int:
             },
             json={"address": wallet},
         ) as response:
-            
-            if response.status != 200:
-                failed += 1
-            
+            if response.status == 200:
+                successful_request += 1
+            elif response.status == 429:
+                overloaded_request += 1
+            elif response.status == 401:
+                cooldown_request += 1
+            else:
+                error_request += 1
+
             return response.status
 
 
@@ -68,14 +78,43 @@ async def main():
     wallets = [line.strip() for line in open(wallets_file, "r")]
     proxies = [line.strip() for line in open(proxies_file, "r")]
 
+    if len(wallets) != len(proxies):
+        print("Wallets and proxies amount are not equal!")
+        return
+
     tasks = []
     for wallet, proxy in zip(wallets, proxies):
         tasks.append(requets_tokens(wallet, proxy))
 
     await tqdm_asyncio.gather(*tasks, desc=f"Processing", unit=" accs")
 
-    print(f"Requests done.")
-    print(f"Failed Requests: {failed}")
+    table = PrettyTable()
+
+    table.field_names = [
+        "Wallets",
+        "Successful Requests",
+        "Cooldown Requests",
+        "Error Requests",
+        "Overloaded Requests",
+    ]
+
+    table.add_row(
+        [
+            len(wallets),
+            successful_request,
+            cooldown_request,
+            error_request,
+            overloaded_request,
+        ]
+    )
+
+    table.align["Wallets"] = "r"
+    table.align["Successful Requests"] = "r"
+    table.align["Cooldown Requests"] = "r"
+    table.align["Error Requests"] = "r"
+    table.align["Overloaded Requests"] = "r"
+
+    print(table)
 
 
 if __name__ == "__main__":
