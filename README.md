@@ -76,5 +76,5 @@ Now that you have set up your virtual environment and installed the necessary de
 Navigate to your project directory (where the script is located) in your command prompt or terminal. Then, use the following command to execute your Python script:
 
 ```bash
-python faucet.py
+python main.py
 ```
