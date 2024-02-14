@@ -14,7 +14,6 @@ successful_request = 0
 cooldown_request = 0
 error_request = 0
 
-
 async def requets_tokens(wallet: str, proxy: str) -> int:
     global overloaded_request, successful_request, error_request, cooldown_request
 
@@ -86,7 +85,7 @@ async def main():
     for wallet, proxy in zip(wallets, proxies):
         tasks.append(requets_tokens(wallet, proxy))
 
-    await tqdm_asyncio.gather(*tasks, desc=f"Processing", unit=" accs")
+    await tqdm_asyncio.gather(*tasks, desc=f"Requesting", unit=" accs", colour="CYAN")
 
     table = PrettyTable()
 
