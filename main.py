@@ -14,12 +14,13 @@ successful_request = 0
 cooldown_request = 0
 error_request = 0
 
+
 async def requets_tokens(wallet: str, proxy: str) -> int:
     global overloaded_request, successful_request, error_request, cooldown_request
 
     api_key = os.getenv("CAPSOLVER_KEY")
-    proxy = Proxy.from_str(proxy)
-    connector = ProxyConnector.from_url(proxy.as_url)
+    str_proxy = Proxy.from_str(proxy)
+    connector = ProxyConnector.from_url(str_proxy.as_url)
 
     async with aiohttp.ClientSession(connector=connector) as session:
         async with session.post(
@@ -27,14 +28,18 @@ async def requets_tokens(wallet: str, proxy: str) -> int:
             json={
                 "clientKey": api_key,
                 "task": {
-                    "type": "ReCaptchaV3TaskProxyLess",
+                    "type": "AntiCloudflareTask",
                     "websiteURL": "https://artio.faucet.berachain.com/",
-                    "websiteKey": "6LfOA04pAAAAAL9ttkwIz40hC63_7IsaU2MgcwVH",
-                    "pageAction": "submit",
+                    "websiteKey": "0x4AAAAAAABS7vwvV6VFfMcD",
+                    "proxy": f"socks5:{str_proxy.host}:{str_proxy.port}:{str_proxy.login}:{str_proxy.password}",
                 },
             },
         ) as response:
             captcha_task = await response.json()
+
+            print(captcha_task)
+            return
+
             while True:
                 async with session.post(
                     "https://api.capsolver.com/getTaskResult",
@@ -45,13 +50,11 @@ async def requets_tokens(wallet: str, proxy: str) -> int:
                 ) as response:
                     captcha_solve_status = await response.json()
                     if captcha_solve_status["status"] == "ready":
-                        captcha_token = captcha_solve_status["solution"][
-                            "gRecaptchaResponse"
-                        ]
+                        captcha_token = captcha_solve_status["solution"]["token"]
                         break
 
         async with session.post(
-            f"https://artio-80085-faucet-api-recaptcha.berachain.com/api/claim?address={wallet}",
+            f"https://artio-80085-faucet-api-cf.berachain.com/api/claim?address={wallet}",
             headers={
                 "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:121.0) Gecko/20100101 Firefox/121.0",
                 "Authorization": f"Bearer {captcha_token}",
