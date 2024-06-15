@@ -28,17 +28,13 @@ async def requets_tokens(wallet: str, proxy: str) -> int:
             json={
                 "clientKey": api_key,
                 "task": {
-                    "type": "AntiCloudflareTask",
-                    "websiteURL": "https://artio.faucet.berachain.com/",
-                    "websiteKey": "0x4AAAAAAABS7vwvV6VFfMcD",
-                    "proxy": f"socks5:{str_proxy.host}:{str_proxy.port}:{str_proxy.login}:{str_proxy.password}",
+                    "type": "AntiTurnstileTaskProxyLess",
+                    "websiteURL": "https://bartio.faucet.berachain.com/",
+                    "websiteKey": "0x4AAAAAAARdAuciFArKhVwt",
                 },
             },
         ) as response:
             captcha_task = await response.json()
-
-            print(captcha_task)
-            return
 
             while True:
                 async with session.post(
@@ -54,7 +50,7 @@ async def requets_tokens(wallet: str, proxy: str) -> int:
                         break
 
         async with session.post(
-            f"https://artio-80085-faucet-api-cf.berachain.com/api/claim?address={wallet}",
+            f"https://bartio-faucet.berachain-devnet.com/api/claim?address={wallet}",
             headers={
                 "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:121.0) Gecko/20100101 Firefox/121.0",
                 "Authorization": f"Bearer {captcha_token}",
@@ -64,8 +60,6 @@ async def requets_tokens(wallet: str, proxy: str) -> int:
             if response.status == 200:
                 successful_request += 1
             elif response.status == 429:
-                overloaded_request += 1
-            elif response.status == 401:
                 cooldown_request += 1
             else:
                 error_request += 1
@@ -94,10 +88,9 @@ async def main():
 
     table.field_names = [
         "Wallets",
-        "Successful Requests",
-        "Cooldown Requests",
-        "Error Requests",
-        "Overloaded Requests",
+        "Successful",
+        "Cooldown ",
+        "Failed",
     ]
 
     table.add_row(
@@ -106,16 +99,13 @@ async def main():
             successful_request,
             cooldown_request,
             error_request,
-            overloaded_request,
         ]
     )
 
     table.align["Wallets"] = "r"
-    table.align["Successful Requests"] = "r"
-    table.align["Cooldown Requests"] = "r"
-    table.align["Error Requests"] = "r"
-    table.align["Overloaded Requests"] = "r"
-
+    table.align["Successful"] = "r"
+    table.align["Cooldown"] = "r"
+    table.align["Failed"] = "r"
     print(table)
 
 
