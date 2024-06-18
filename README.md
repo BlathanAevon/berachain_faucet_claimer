@@ -68,6 +68,10 @@ CAPSOLVER_KEY = capsolver.com key
 ```
 
 2. Rename `data.example` to `data`. Set all the neccesary data in `data/wallets.txt` and `data/proxies.txt`
+<br>
+
+> [!IMPORTANT]
+> proxies should be in format `http://login:password:ip:port`
 
 ## Step 6: Run the Python Script
 
