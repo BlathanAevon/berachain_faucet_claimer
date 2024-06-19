@@ -9,10 +9,9 @@ from prettytable import PrettyTable
 
 load_dotenv()
 
-overloaded_request = 0
-successful_request = 0
-cooldown_request = 0
-error_request = 0
+successful_request = {}
+cooldown_request = {}
+error_request = {}
 
 
 async def requets_tokens(wallet: str, proxy: str) -> int:
@@ -58,11 +57,11 @@ async def requets_tokens(wallet: str, proxy: str) -> int:
             json={"address": wallet},
         ) as response:
             if response.status == 200:
-                successful_request += 1
+                successful_request[wallet] = "Success"
             elif response.status == 429:
-                cooldown_request += 1
+                cooldown_request[wallet] = "Wallet in cooldown, try again later"
             else:
-                error_request += 1
+                error_request[wallet] = f"Failed request, reason: {response.text}"
 
             return response.status
 
@@ -80,7 +79,10 @@ async def main():
 
     tasks = []
     for wallet, proxy in zip(wallets, proxies):
-        tasks.append(requets_tokens(wallet, proxy))
+        if len(wallet) > 42:
+            error_request[wallet] = "Wrong wallet format"
+        else:
+            tasks.append(requets_tokens(wallet, proxy))
 
     await tqdm_asyncio.gather(*tasks, desc=f"Requesting", unit=" accs", colour="CYAN")
 
@@ -96,9 +98,9 @@ async def main():
     table.add_row(
         [
             len(wallets),
-            successful_request,
-            cooldown_request,
-            error_request,
+            len(successful_request.keys()),
+            len(cooldown_request.keys()),
+            len(error_request.keys()),
         ]
     )
 
@@ -107,6 +109,11 @@ async def main():
     table.align["Cooldown"] = "r"
     table.align["Failed"] = "r"
     print(table)
+
+    if len(error_request.keys()) > 0:
+        print("Failed wallets:")
+        for wallet, reason in error_request.items():
+            print(f"{wallet}: {reason}")
 
 
 if __name__ == "__main__":
