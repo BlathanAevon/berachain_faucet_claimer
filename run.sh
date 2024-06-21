@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 if test -d ./venv; then
     echo "Venv is already created, running script..."
 else 
