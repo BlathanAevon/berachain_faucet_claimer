@@ -6,7 +6,9 @@ This guide will walk you through the process of setting up a Python virtual envi
 
 Before you begin, make sure you have the following prerequisites installed on your system:
 
-- Python 3.x (You can download it from [Python.org](https://www.python.org/downloads/))
+- Python 3. (You can download it from [Python.org](https://www.python.org/downloads/))
+- > [!IMPORTANT]
+> THIS SCRIPT WORKS ONLY ON PYTHON VERSION 3.11
 
 ## Step 1: Clone the Repository
 
