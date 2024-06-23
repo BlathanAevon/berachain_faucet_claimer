@@ -64,7 +64,7 @@ async def requets_tokens(wallet: str, proxy: str) -> int:
                 cooldown_request[wallet] = f"Wallet in cooldown, try again later"
             else:
                 error_request[wallet] = (
-                    f"Failed request, reason: {await response.json()}"
+                    f"Failed request, reason: {response.text}"
                 )
 
             return response.status
