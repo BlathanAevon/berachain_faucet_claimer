@@ -17,7 +17,7 @@ error_request = {}
 
 
 async def requets_tokens(wallet: str, proxy: str) -> int:
-    global overloaded_request, successful_request, error_request, cooldown_request
+    global successful_request, error_request, cooldown_request
 
     api_key = os.getenv("CAPSOLVER_KEY")
     str_proxy = Proxy.from_str(proxy)
