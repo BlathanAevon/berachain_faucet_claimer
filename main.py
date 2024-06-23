@@ -6,8 +6,10 @@ from aiohttp_socks import ProxyConnector
 import os
 from dotenv import load_dotenv
 from prettytable import PrettyTable
+from fake_useragent import UserAgent
 
 load_dotenv()
+ua = UserAgent()
 
 successful_request = {}
 cooldown_request = {}
@@ -51,7 +53,7 @@ async def requets_tokens(wallet: str, proxy: str) -> int:
         async with session.post(
             f"https://bartio-faucet.berachain-devnet.com/api/claim?address={wallet}",
             headers={
-                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:121.0) Gecko/20100101 Firefox/121.0",
+                "User-Agent": ua.random,
                 "Authorization": f"Bearer {captcha_token}",
             },
             json={"address": wallet},
@@ -59,9 +61,11 @@ async def requets_tokens(wallet: str, proxy: str) -> int:
             if response.status == 200:
                 successful_request[wallet] = "Success"
             elif response.status == 429:
-                cooldown_request[wallet] = "Wallet in cooldown, try again later"
+                cooldown_request[wallet] = f"Wallet in cooldown, try again later"
             else:
-                error_request[wallet] = f"Failed request, reason: {response.text}"
+                error_request[wallet] = (
+                    f"Failed request, reason: {await response.json()}"
+                )
 
             return response.status
 
@@ -117,4 +121,7 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    if not os.path.exists(".env"):
+        print(".env not found, have you renamed .env_template to .env ?")
+    else:
+        asyncio.run(main())
