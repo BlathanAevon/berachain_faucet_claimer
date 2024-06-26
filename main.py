@@ -62,6 +62,10 @@ async def requets_tokens(wallet: str, proxy: str) -> int:
                 successful_request[wallet] = "Success"
             elif response.status == 429:
                 cooldown_request[wallet] = f"Wallet in cooldown, try again later"
+            elif response.status == 402:
+                error_request[wallet] = (
+                    f"Failed request, reason: You don't have 0.001 ETH"
+                )
             else:
                 error_request[wallet] = (
                     f"Failed request, reason: {response.text}"
