@@ -51,7 +51,7 @@ async def requets_tokens(wallet: str, proxy: str) -> int:
                         break
 
         async with session.post(
-            f"https://bartio-faucet.berachain-devnet.com/api/claim?address={wallet}",
+            f"https://bartiofaucet.berachain.com/api/claim?address={wallet}",
             headers={
                 "User-Agent": ua.random,
                 "Authorization": f"Bearer {captcha_token}",
@@ -67,9 +67,7 @@ async def requets_tokens(wallet: str, proxy: str) -> int:
                     f"Failed request, reason: You don't have 0.001 ETH"
                 )
             else:
-                error_request[wallet] = (
-                    f"Failed request, reason: {response.text}"
-                )
+                error_request[wallet] = f"Failed request, reason: {response.text}"
 
             return response.status
 
